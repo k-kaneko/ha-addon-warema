@@ -182,6 +182,64 @@ function registerDevice(element) {
             }
 
             break;
+        case 63:
+            model = 'Weather station plus'
+            payload = {
+                ...base_payload,
+                device: {
+                    ...base_device,
+                    model: model
+                }
+            }
+
+            const illuminance_payload = {
+                ...payload,
+                state_topic: 'warema/' + element.snr + '/illuminance/state',
+                device_class: 'illuminance',
+                unique_id: element.snr + '_illuminance',
+                object_id: element.snr + '_illuminance',
+                unit_of_measurement: 'lx',
+            };
+            client.publish('homeassistant/sensor/' + element.snr + '/illuminance/config', JSON.stringify(illuminance_payload), {retain: true})
+
+            //No temp on weather station eco
+            const temperature_payload = {
+                ...payload,
+                state_topic: 'warema/' + element.snr + '/temperature/state',
+                device_class: 'temperature',
+                unique_id: element.snr + '_temperature',
+                object_id: element.snr + '_temperature',
+                unit_of_measurement: '°C',
+            }
+            client.publish('homeassistant/sensor/' + element.snr + '/temperature/config', JSON.stringify(temperature_payload), {retain: true})
+
+            const wind_payload = {
+                ...payload,
+                state_topic: 'warema/' + element.snr + '/wind/state',
+                device_class: 'wind_speed',
+                unique_id: element.snr + '_wind',
+                object_id: element.snr + '_wind',
+                unit_of_measurement: 'm/s',
+            }
+            client.publish('homeassistant/sensor/' + element.snr + '/wind/config', JSON.stringify(wind_payload), {retain: true})
+
+            //No rain on weather station eco
+            const rain_payload = {
+                ...payload,
+                state_topic: 'warema/' + element.snr + '/rain/state',
+                device_class: 'moisture',
+                unique_id: element.snr + '_rain',
+                object_id: element.snr + '_rain',
+            }
+            client.publish('homeassistant/binary_sensor/' + element.snr + '/rain/config', JSON.stringify(rain_payload), {retain: true})
+
+            client.publish(availability_topic, 'online', {retain: true})
+
+            devices[element.snr] = {};
+            // No need to add to stick, updates are broadcasted
+
+            return;
+
         default:
             log.info('Unrecognized device type: ' + element.type)
             model = 'Unknown model ' + element.type
